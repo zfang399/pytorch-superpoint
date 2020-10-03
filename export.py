@@ -344,7 +344,7 @@ def export_detector_homoAdapt_gpu(config, output_dir, args):
         if output_images:
             img_pts = draw_keypoints(img_2D * 255, pts.transpose())
             f = save_output / (str(count) + ".png")
-            if task == "Coco" or "Kitti":
+            if task == "Coco" or "Kitti" or "Aidtr":
                 f = save_output / (name + ".png")
             saveImg(img_pts, str(f))
         count += 1
