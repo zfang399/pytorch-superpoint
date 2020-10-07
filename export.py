@@ -120,7 +120,7 @@ def export_descriptor(config, output_dir, args):
     ###### check!!!
     count = 0
     for i, sample in tqdm(enumerate(test_loader)):
-        img_0, img_1 = sample["image"], sample["warped_image"]
+        img_0, img_1 = sample["image1"], sample["image2"]
 
         # first image, no matches
         # img = img_0
@@ -155,8 +155,9 @@ def export_descriptor(config, output_dir, args):
             tracker.update(pts, desc)
 
         # save keypoints
-        pred = {"image": squeezeToNumpy(img_0)}
-        pred.update({"prob": pts.transpose(), "desc": desc.transpose()})
+        pred = {"image1": squeezeToNumpy(img_0)}
+        pred.update({"img1_prob": pts.transpose(), 
+                     "img1_desc": desc.transpose()})
 
         # second image, output matches
         outs = get_pts_desc_from_agent(val_agent, img_1, device=device)
@@ -165,13 +166,13 @@ def export_descriptor(config, output_dir, args):
         if outputMatches == True:
             tracker.update(pts, desc)
 
-        pred.update({"warped_image": squeezeToNumpy(img_1)})
+        pred.update({"image2": squeezeToNumpy(img_1)})
         # print("total points: ", pts.shape)
         pred.update(
             {
-                "warped_prob": pts.transpose(),
-                "warped_desc": desc.transpose(),
-                "homography": squeezeToNumpy(sample["homography"]),
+                "img2_prob": pts.transpose(),
+                "img2_desc": desc.transpose(),
+                "rel_pose": squeezeToNumpy(sample["rel_pose"]),
             }
         )
 
