@@ -32,7 +32,7 @@ class AIDTR_UTILS(object):
 
         self.extrinsics_raw_data = self.load_csv(join(root_dir, self.EXTRINSIC_FILE_NAME)) # a numpy array with string, 120 x 9
         self.image_list = self.list_images(join(self.root_dir, self.IMAGE_FOLDER))
-        
+
 
     ### io related
 
@@ -47,7 +47,7 @@ class AIDTR_UTILS(object):
             reader = csv.reader(f)
             data = list(reader)
             data = np.array(data)
-        
+
         return data[1:] # first column is column name
 
     def get_all_timesteps(self):
@@ -62,7 +62,7 @@ class AIDTR_UTILS(object):
     def get_pix_T_cam(self, m, l):
         intrinsics_file_name = self.get_intrinsics_file_name(m, l)
         with open(intrinsics_file_name) as f:
-            raw_data = yaml.load(f)
+            raw_data = yaml.load(f, Loader=yaml.FullLoader)
             intrinsics = np.reshape(raw_data['projection_matrix']['data'], (3, 4))
             image_width = raw_data['image_width'] # 1024
             image_height = raw_data['image_height'] # 750
@@ -84,7 +84,7 @@ class AIDTR_UTILS(object):
     def get_rect_T_cam(self, m, l):
         intrinsics_file_name = self.get_intrinsics_file_name(m, l)
         with open(intrinsics_file_name) as f:
-            raw_data = yaml.load(f)
+            raw_data = yaml.load(f, Loader=yaml.FullLoader)
             rectification_matrix = np.reshape(raw_data['rectification_matrix']['data'], (3, 3))
 
         rectification_matrix_4x4 = np.eye(4)
@@ -130,7 +130,7 @@ class AIDTR_UTILS(object):
         return cam_T_world
 
     def generate_dump_file_name(self, timestep, m, l0, l1):
-        return join(self.dump_folder, self.id + '_' + timestep + '_module' + str(m) + '_l_' + str(l0) + '_' + str(l1) + '_' 
+        return join(self.dump_folder, self.id + '_' + timestep + '_module' + str(m) + '_l_' + str(l0) + '_' + str(l1) + '_'
             + str(self.out_image_size[0]) + 'x' + str(self.out_image_size[1]) + '.npz')
 
     def dump_dict(self, dict_to_save, timestep, m, l0, l1, verbose=True):
@@ -140,7 +140,7 @@ class AIDTR_UTILS(object):
         return True
 
     def generate_seq_dump_file_name(self, S, m, l0, l1, timestep):
-        return join(self.dump_folder, self.id + '_S' + str(S) + '_module' + str(m) + '_' + str(timestep) + '_l_' + str(l0) + '_' + str(l1) + '_' 
+        return join(self.dump_folder, self.id + '_S' + str(S) + '_module' + str(m) + '_' + str(timestep) + '_l_' + str(l0) + '_' + str(l1) + '_'
             + str(self.out_image_size[0]) + 'x' + str(self.out_image_size[1]) + '.npz')
 
     def dump_seq_dict(self, dict_to_save, S, m, l0, l1, timestep, verbose=True):
@@ -150,7 +150,7 @@ class AIDTR_UTILS(object):
         return True
 
     def generate_multiview_dump_file_name(self, S, l0, l1, timestep):
-        return join(self.dump_folder, self.id + '_S' + str(S) + '_' + str(timestep) + '_l_' + str(l0) + '_' + str(l1) + '_' 
+        return join(self.dump_folder, self.id + '_S' + str(S) + '_' + str(timestep) + '_l_' + str(l0) + '_' + str(l1) + '_'
             + str(self.out_image_size[0]) + 'x' + str(self.out_image_size[1]) + '.npz')
 
     def dump_multiview_dict(self, dict_to_save, S, l0, l1, timestep, verbose=True):
