@@ -51,6 +51,8 @@ def get_pts_des_from_agent(val_agent, image, device="cpu"):
     pts = val_agent.heatmap_to_pts()
     pts = val_agent.soft_argmax_points(pts, patch_size=patch_size)
     desc_sparse = val_agent.desc_to_sparseDesc()
+    print(pts[0].shape, desc_sparse[0].shape)
+    assert(pts[0].shape[1] == desc_sparse[0].shape[1])
     return pts[0].transpose(), desc_sparse[0].transpose()
 
 # NGRANSAC settings
@@ -153,9 +155,14 @@ for root_dir in dir_to_process:
                 kp2, desc2 = get_pts_des_from_agent(val_agent, warped_image, device=device)
 
                 kp1 = np.array([kp1])
-                kp2 = np.array([kp1])
+                kp2 = np.array([kp2])
                 desc1 = np.array([desc1])
                 desc2 = np.array([desc2])
+
+                print(kp1.shape, kp2.shape)
+                print(desc1.shape, desc2.shape)
+                assert(kp1.shape[1] == desc1.shape[1])
+                assert(kp2.shape[1] == desc2.shape[1]) # line fails
 
                 #save data tensor and ground truth transformation
                 np.save(out_dir + 'pair_superglue_{0}.npy'.format(superglue_sample_count), [
