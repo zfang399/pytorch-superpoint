@@ -28,16 +28,12 @@ val_agent = Val_model_heatmap(config["model"], device=device)
 val_agent.loadModel()
 patch_size = config["model"]["subpixel"]["patch_size"]
 
-def img_preprocess(image):
-    sizer = np.array([240, 320])
-    s = max(sizer /image.shape[:2])
+def resize_image(image, size):
+    s = max(size /image.shape[:2])
     image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    image = image[:int(sizer[0]/s),:int(sizer[1]/s)]
-    image = cv2.resize(image, (sizer[1], sizer[0]),
+    image = image[:int(size[0]/s),:int(size[1]/s)]
+    image = cv2.resize(image, (size[1], size[0]),
                              interpolation=cv2.INTER_AREA)
-    image = image.astype('float32') / 255.0
-    if image.ndim == 2:
-        image = image[:,:, np.newaxis]
     return image
 
 # Forward function
@@ -46,12 +42,14 @@ def get_pts_des_from_agent(val_agent, image, device="cpu"):
     pts: numpy (N, 3)
     desc: numpy (N, 256)
     """
-    img = img_preprocess(image)
-    heatmap_batch = val_agent.run(torch.from_numpy(img).permute(2,0,1).unsqueeze(0).to(device))
+    image = image.astype('float32') / 255.0
+    if image.ndim == 2:
+        image = image[:,:, np.newaxis]
+
+    heatmap_batch = val_agent.run(torch.from_numpy(image).permute(2,0,1).unsqueeze(0).to(device))
     pts = val_agent.heatmap_to_pts()
     pts = val_agent.soft_argmax_points(pts, patch_size=patch_size)
     desc_sparse = val_agent.desc_to_sparseDesc()
-    print(pts[0].shape, desc_sparse[0].shape)
     assert(pts[0].shape[1] == desc_sparse[0].shape[1])
     return pts[0].transpose(), desc_sparse[0].transpose()
 
@@ -142,6 +140,7 @@ for root_dir in dir_to_process:
             bf = cv2.BFMatcher()
             for i in range(timestep_cnt):
                 image = cv2.imread(rgb_imgname_list[i])
+                image = resize_image(image, np.array([480, 640]))
 
                 width, height = image.shape[0], image.shape[1]
 
@@ -159,10 +158,10 @@ for root_dir in dir_to_process:
                 desc1 = np.array([desc1])
                 desc2 = np.array([desc2])
 
-                print(kp1.shape, kp2.shape)
-                print(desc1.shape, desc2.shape)
                 assert(kp1.shape[1] == desc1.shape[1])
                 assert(kp2.shape[1] == desc2.shape[1]) # line fails
+                assert(image.shape == (480, 640))
+                assert(warped_image.shape == (480, 640))
 
                 #save data tensor and ground truth transformation
                 np.save(out_dir + 'pair_superglue_{0}.npy'.format(superglue_sample_count), [
