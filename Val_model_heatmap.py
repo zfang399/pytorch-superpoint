@@ -74,20 +74,20 @@ class Val_model_heatmap(SuperPointFrontend_torch):
 
     def extract_patches(self, label_idx, img):
         """
-        input: 
+        input:
             label_idx: tensor [N, 4]: (batch, 0, y, x)
             img: tensor [batch, channel(1), H, W]
         """
         from utils.losses import extract_patches
         patch_size = self.config['params']['patch_size']
-        patches = extract_patches(label_idx.to(self.device), img.to(self.device), 
+        patches = extract_patches(label_idx.to(self.device), img.to(self.device),
             patch_size=patch_size)
         return patches
         pass
 
     def run(self, images):
         """
-        input: 
+        input:
             images: tensor[batch(1), 1, H, W]
 
         """
@@ -105,10 +105,10 @@ class Val_model_heatmap(SuperPointFrontend_torch):
             heatmap = train_agent.flatten_64to1(semi, cell_size=self.cell_size)
         elif channel == 65:
             heatmap = flattenDetection(semi, tensor=True)
-            
+
         heatmap_np = toNumpy(heatmap)
         self.heatmap = heatmap_np
-        return self.heatmap
+        return heatmap
         pass
 
     def heatmap_to_pts(self):
@@ -186,12 +186,12 @@ if __name__ == '__main__':
         print("image: ", img.shape)
 
         heatmap_batch = val_agent.run(img.to(device)) # heatmap: numpy [batch, 1, H, W]
-        # heatmap to pts 
+        # heatmap to pts
         pts = val_agent.heatmap_to_pts()
         # print("pts: ", pts)
         print("pts[0]: ", pts[0].shape)
         print("pts: ", pts[0][:,:3])
-        
+
         pts_subpixel = val_agent.soft_argmax_points(pts)
         print("subpixels: ", pts_subpixel[0][:,:3])
 
@@ -199,7 +199,6 @@ if __name__ == '__main__':
         desc_sparse = val_agent.desc_to_sparseDesc()
         print("desc_sparse[0]: ", desc_sparse[0].shape)
 
-# pts, desc, _, heatmap
 
 
 
